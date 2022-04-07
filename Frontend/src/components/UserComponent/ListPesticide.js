@@ -1,0 +1,106 @@
+import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { useHistory} from 'react-router-dom'
+import ProductService from '../../services/ProductService';
+import cartService from '../../services/cart.service';
+
+const ListPesticide = () => {
+    const [products, setProducts] = useState([])
+    const [name, setName] = useState('')
+    const arr=[];
+    const history = useHistory();
+    useEffect(() => {
+        getAllPesticides();
+    },[])
+
+    const getAllPesticides = () => {
+        ProductService.getProductsByCatId(4).then((response) => {
+            setProducts(response.data)
+            console.log(response.data);
+        }).catch(error => {
+            console.log(error);
+        })
+    }
+
+    const searchProductByName = () => {
+        console.log(name);
+        ProductService.searchProductByName(name).then((response) => {
+            console.log(response.data);
+            setProducts(response.data)
+        }).catch(error => {
+            console.log(error);
+        })
+    }
+
+    const AddtoCart = (prodId) => {
+        const pdata={ product_id : prodId, qty : 1}
+
+
+       arr.push(prodId)
+
+        cartService.create(pdata).then((response) => {
+            console.log(response.data);
+            alert(response.data.message);
+
+        }).catch(error => {
+            console.log(error);
+        })
+        
+        
+
+        
+            
+            history.push("/user-pesticide");
+       
+    }
+
+    return (
+        <div className='container'>
+             <br />
+            <div class="input-group w-25">
+                <input 
+                    type="search" 
+                    class="form-control rounded" 
+                    placeholder="Search" 
+                    aria-label="Search" 
+                    aria-describedby="search-addon"
+                    value = {name}
+                    onChange = {(e) => setName(e.target.value)}
+                />
+                <button type="button" class="btn btn-outline-primary" onClick = {() => searchProductByName()}>search</button>
+            </div>
+            <h2 className='text-center'>Pesticide Details</h2>
+            <Link to = "/profile" className='btn btn-primary mb-2'>Back</Link>
+            <table className='table table-bordered table-striped'>
+            <thead>
+                    <th>Pesticide Name</th>
+                    <th>Pesticide Image</th>
+                    <th>Pesticide Description</th>
+                    <th>Pesticide Price</th>
+                    <th>Action</th>
+                </thead>
+                <tbody>
+                    {
+                    
+                            products.map(
+                             products =>
+                             <tr key = {products.prodId}>
+                                 <td> {products.name} </td>
+                                 <td> <img src={`data:image/jpeg;base64,${products.data}`} width="150" alt=" "/>  </td>
+                                 <td> {products.descr} </td>
+                                 <td> {products.price} </td>
+                                 <td>
+                                <button className='btn btn-warning' onClick = {() => AddtoCart(products.prodId)}
+                                    >Add to Cart</button>
+                                </td>
+                                 </tr>
+                             )
+                    }
+                </tbody>
+            </table>
+        </div>
+    )
+
+}
+
+export default ListPesticide
